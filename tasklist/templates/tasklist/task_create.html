@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        
+    </head>
+    <body>
+        <form method="POST">
+            {% csrf_token %}
+            {{form.errors}}
+            {{form.as_p}}
+            <input type="submit" value="Crear"/>
+        </form>
+    </body>
+</html>

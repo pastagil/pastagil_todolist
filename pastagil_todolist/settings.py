@@ -25,7 +25,7 @@ SECRET_KEY = 'v5(+s3@ok##l4m+yk0k15-z5n9aryz_ttcvnt3w6yn-@z=f0ja'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 

@@ -44,7 +44,7 @@ class TaskInterfaceTest(TestCase):
         task = Task.objects.create(description=self.description)
         client = Client()
         # when:
-        response = client.get(reverse('tasklist:home'))
+        response = client.get(reverse('tasklist:task_list'))
         # then:
         # self.assertEquals(response.status_code, 200)
         self.assertContains( response, self.description, status_code=200 )
