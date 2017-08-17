@@ -12,7 +12,10 @@
         <br>
         <u>
             {% for task in tasks %}
-            <li>{{ task.description }}</li>
+            <li>
+                {{ task.description }}
+                <a class="btn btn-danger" href="{% url 'tasklist:task_delete' task.id %}">Borrar</a>
+            </li>
             {% endfor %}
         </u>
     </body>
