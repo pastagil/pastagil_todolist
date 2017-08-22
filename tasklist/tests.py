@@ -1,6 +1,8 @@
 from django.test import TestCase, Client
+from django.test.client import RequestFactory
 from django.core.urlresolvers import reverse
 from .models import Task
+from .views import TaskListView, TaskCreateView
 from random import shuffle
 
 # Create your tests here.
@@ -57,7 +59,8 @@ class TaskModelTest(TestCase):
 class TaskInterfaceTest(TestCase):
     
     
-    def testInterface(self):
+    def testListInterfaceOld(self):
+        """Test if you can get a task through the list view"""
         # given:
         self.description="afeitar el gato"
         task = Task.objects.create(description=self.description)
@@ -65,6 +68,43 @@ class TaskInterfaceTest(TestCase):
         # when:
         response = client.get(reverse('tasklist:task_list'))
         # then:
-        # self.assertEquals(response.status_code, 200)
         self.assertContains( response, self.description, status_code=200 )
+        
+    
+    def testListInterface(self):
+        """Test if you can get a list of tasks through the list view"""
+        # given:
+        self.description="afeitar el gato"
+        client = Client()
+        task_list = [
+            Task(description = self.description+' 1'),
+            Task(description = self.description+' 2'),
+            Task(description = self.description+' 3'),
+        ]
+        for task in task_list:
+            task.save()
+        # when:
+        request = RequestFactory().get(reverse('tasklist:task_list'))
+        response = TaskListView.as_view()(request)
+        # then:
+        self.assertEquals(response.status_code, 200)
+        for task in task_list:
+            self.assertContains( response, task.description)
+            
+        
+    def testCreateInterface(self):
+        """Test if you can create a tasks through the create view"""
+        # given:
+        self.description="afeitar el gato"
+        self.initial_count = Task.objects.count()
+        client = Client()
+        # when:
+        request = RequestFactory().post(reverse('tasklist:task_create'), data={'description': self.description})
+        response = TaskCreateView.as_view()(request)
+        # then:
+        self.final_count = Task.objects.count()
+        task = Task.objects.get(description = self.description)
+        self.assertEquals(response.status_code, 302, 'Status code should be 302 as it redirects to list view')
+        self.assertEqual(self.initial_count+1, self.final_count, 'Number of tasks should be incremented by 1')
+        self.assertEqual(task.description, self.description, 'The task should be stored in the DB')
         
