@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.test.client import RequestFactory
 from django.core.urlresolvers import reverse
 from .models import Task
-from .views import TaskListView, TaskCreateView
+from .views import TaskListView, TaskCreateView, TaskDeleteView
 from random import shuffle
 
 # Create your tests here.
@@ -75,7 +75,6 @@ class TaskInterfaceTest(TestCase):
         """Test if you can get a list of tasks through the list view"""
         # given:
         self.description="afeitar el gato"
-        client = Client()
         task_list = [
             Task(description = self.description+' 1'),
             Task(description = self.description+' 2'),
@@ -97,7 +96,6 @@ class TaskInterfaceTest(TestCase):
         # given:
         self.description="afeitar el gato"
         self.initial_count = Task.objects.count()
-        client = Client()
         # when:
         request = RequestFactory().post(reverse('tasklist:task_create'), data={'description': self.description})
         response = TaskCreateView.as_view()(request)
@@ -107,4 +105,29 @@ class TaskInterfaceTest(TestCase):
         self.assertEquals(response.status_code, 302, 'Status code should be 302 as it redirects to list view')
         self.assertEqual(self.initial_count+1, self.final_count, 'Number of tasks should be incremented by 1')
         self.assertEqual(task.description, self.description, 'The task should be stored in the DB')
+        
+    def testDeleteInterface(self):
+        """Test if you can delete a task from the task list"""
+        # given:
+        self.description="afeitar el gato"
+        task_list = [
+            Task(description = self.description+' 1'),
+            Task(description = self.description+' 2'),
+            Task(description = self.description+' 3'),
+        ]
+        for task in task_list:
+            task.save()
+        self.initial_count = Task.objects.count()
+        
+        # when:
+        pk = Task.objects.latest('id').id
+        url = reverse('tasklist:task_delete', kwargs = {'pk': pk})
+        request = RequestFactory().post(url)
+        response = TaskDeleteView.as_view()(request, pk=pk)
+        self.final_count = Task.objects.count()
+        # then:
+        self.assertEquals(response.status_code, 302, 'Status code should be 302 as it redirects to list view')
+        self.assertEqual(self.initial_count-1, self.final_count, 'Number of tasks should be decreased by 1')
+        self.assertTrue(not Task.objects.filter(pk=pk).exists())
+            
         
