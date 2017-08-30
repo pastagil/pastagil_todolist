@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.test.client import RequestFactory
 from django.core.urlresolvers import reverse
 from .models import Task
-from .views import TaskListView, TaskCreateView, TaskDeleteView
+from .views import TaskListView, TaskCreateView, TaskDeleteView, TaskUpdateView
 from random import shuffle
 
 # Create your tests here.
@@ -54,6 +54,24 @@ class TaskModelTest(TestCase):
         # then
         for task in task_list:
             self.assertTrue(task in retrieved_tasks)
+
+    def testEdit(self):
+        #given
+        task_list = [
+            Task(description = self.description+' 1'),
+            Task(description = self.description+' 2'),
+            Task(description = self.description+' 3'),
+        ]
+        for task in task_list:
+            task.save()
+        new_description = "afeitar al perro"
+        #when
+        task_to_edit = task_list[1]
+        task_to_edit.description = new_description
+        task_to_edit.save()
+        task_edited = Task.objects.get(pk = task_to_edit.pk)
+        #then
+        self.assertEquals(task_edited.description, new_description)
 
 
 class TaskInterfaceTest(TestCase):
@@ -129,5 +147,26 @@ class TaskInterfaceTest(TestCase):
         self.assertEquals(response.status_code, 302, 'Status code should be 302 as it redirects to list view')
         self.assertEqual(self.initial_count-1, self.final_count, 'Number of tasks should be decreased by 1')
         self.assertTrue(not Task.objects.filter(pk=pk).exists())
-            
+        
+    def testEditInterface(self):
+        """Test if you can edit a task from the task list"""
+        #given
+        self.description="afeitar el gato"
+        task_list = [
+            Task(description = self.description+' 1'),
+            Task(description = self.description+' 2'),
+            Task(description = self.description+' 3'),
+        ]
+        for task in task_list:
+            task.save()
+        #when
+        pk = Task.objects.latest('id').id
+        url = reverse('tasklist:task_edit', kwargs = {'pk':pk})
+        request = RequestFactory().post(url, data={'description': self.description})
+        response = TaskUpdateView.as_view()(request, pk=pk)
+        #then
+        self.assertEquals(response.status_code, 302, 'Status code should be 302 as it redirects to list view')
+        edited_task = Task.objects.get(pk = pk)
+        self.assertEqual(edited_task.description, self.description, 'The description did not change')
+        
         
