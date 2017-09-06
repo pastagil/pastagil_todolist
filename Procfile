@@ -1,0 +1,1 @@
+web: gunicorn pastagil_todolist.wsgi:application --log-file -
