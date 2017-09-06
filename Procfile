@@ -1,1 +1,1 @@
-web: gunicorn pastagil_todolist.wsgi --log-file -
+web: gunicorn pastagil_todolist.wsgi:application --log-file -
