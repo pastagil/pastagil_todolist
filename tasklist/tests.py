@@ -72,24 +72,47 @@ class TaskModelTest(TestCase):
         task_edited = Task.objects.get(pk = task_to_edit.pk)
         #then
         self.assertEquals(task_edited.description, new_description)
+        
+    def testComplete(self):
+        #given
+        task_changed = Task.objects.create(description=self.description)
+        task_unchanged = Task.objects.create(description=self.description)
+        num_of_completed_tasks_before = Task.objects.filter(complete = True).count()
+        #when
+        task_changed.complete = True
+        task_changed.save()
+        #then
+        task_changed = Task.objects.get(id = task_changed.id)
+        task_unchanged = Task.objects.get(id = task_unchanged.id)
+        num_of_completed_tasks_after = Task.objects.filter(complete = True).count()
+        self.assertEquals(task_changed.complete, True)
+        self.assertEquals(task_unchanged.complete, False)
+        self.assertEquals(num_of_completed_tasks_after, num_of_completed_tasks_before + 1)
 
 
 class TaskInterfaceTest(TestCase):
     
-    
-    def testListInterfaceOld(self):
-        """Test if you can get a task through the list view"""
+    def testCompleteListInterface(self):
+        """Test if you can get a list of tasks through the list view"""
         # given:
         self.description="afeitar el gato"
-        task = Task.objects.create(description=self.description)
-        client = Client()
+        task_list = [
+            Task(description = self.description+' 1', complete = True),
+            Task(description = self.description+' 2'),
+            Task(description = self.description+' 3'),
+        ]
+        for task in task_list:
+            task.save()
         # when:
-        response = client.get(reverse('tasklist:task_list'))
+        request = RequestFactory().get(reverse('tasklist:task_list'))
+        response = TaskListView.as_view()(request)
         # then:
-        self.assertContains( response, self.description, status_code=200 )
-        
+        self.assertEquals(response.status_code, 200)
+        for task in task_list:
+            self.assertContains(response, "<del>")
+            self.assertContains( response, task.description)
     
-    def testListInterface(self):
+    def testIncompleteListInterface(self):
         """Test if you can get a list of tasks through the list view"""
         # given:
         self.description="afeitar el gato"
@@ -106,6 +129,7 @@ class TaskInterfaceTest(TestCase):
         # then:
         self.assertEquals(response.status_code, 200)
         for task in task_list:
+            self.assertNotContains(response, "<del>")
             self.assertContains( response, task.description)
             
         
@@ -168,5 +192,26 @@ class TaskInterfaceTest(TestCase):
         self.assertEquals(response.status_code, 302, 'Status code should be 302 as it redirects to list view')
         edited_task = Task.objects.get(pk = pk)
         self.assertEqual(edited_task.description, self.description, 'The description did not change')
+        
+    def testEditCompleteInterface(self):
+        """Test if you can complete a task from the task list"""
+        #given
+        self.description="afeitar el gato"
+        task_list = [
+            Task(description = self.description+' 1'),
+            Task(description = self.description+' 2'),
+            Task(description = self.description+' 3'),
+        ]
+        for task in task_list:
+            task.save()
+        #when
+        pk = Task.objects.latest('id').id
+        url = reverse('tasklist:task_edit', kwargs = {'pk':pk})
+        request = RequestFactory().post(url, data={'complete': True})
+        response = TaskUpdateView.as_view()(request, pk=pk)
+        #then
+        self.assertEquals(response.status_code, 302, 'Status code should be 302 as it redirects to list view')
+        edited_task = Task.objects.get(pk = pk)
+        self.assertEqual(edited_task.complete, True, 'The complete status did not change')
         
         

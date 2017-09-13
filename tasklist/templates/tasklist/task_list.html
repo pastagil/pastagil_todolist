@@ -13,7 +13,11 @@
         <u>
             {% for task in tasks %}
             <li>
-                {{ task.description }}
+                {% if task.complete %}
+                    <del>{{ task.description }}</del>
+                {% else %}
+                    {{ task.description }}
+                {% endif %}
                 <a class="btn btn-success" href="{% url 'tasklist:task_edit' task.id %}">Editar</a>
                 <a class="btn btn-danger" href="{% url 'tasklist:task_delete' task.id %}">Borrar</a>
             </li>
