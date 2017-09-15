@@ -9,5 +9,5 @@ class TaskForm(forms.ModelForm):
             'description',
         ]
         labels = {
-            'description': 'Descripcion',
+            'description': 'Descripción',
         }

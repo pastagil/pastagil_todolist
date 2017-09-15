@@ -1,17 +1,15 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        
-    </head>
-    <body>
-        <h1>¿Está seguro que desea eliminar: {{ object.description }}?</h1>
-        
-        <form method="POST">
-            {% csrf_token %}
-            {{form.errors}}
-            {{form.as_p}}
-            <input type="submit" value="Si"/>
-            <a class="btn btn-primary" href="{% url 'tasklist:task_list' %}">Cancelar</a>
-        </form>
-    </body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Eliminar Tarea</h1>
+<br>
+<h3>¿Está seguro que desea eliminar: <b>{{ object.description }}?</b></h3>
+<br>
+<form method="POST">
+    {% csrf_token %}
+    {{form.errors}}
+    {{form.as_p}}
+    <input class="btn btn-danger" type="submit" value="Si"/>
+    <a class="btn btn-primary" href="{% url 'tasklist:task_list' %}">Cancelar</a>
+</form>
+{% endblock %}

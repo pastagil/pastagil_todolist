@@ -1,14 +1,14 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        
-    </head>
-    <body>
-        <form method="POST">
-            {% csrf_token %}
-            {{form.errors}}
-            {{form.as_p}}
-            <input type="submit" value="Crear"/>
-        </form>
-    </body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Crear Tarea</h1>
+<br><br><br>
+<form method="POST">
+    {% csrf_token %}
+    {{form.errors}}
+    {{form.as_p}}
+    <br>
+    <input class="btn btn-info" type="submit" value="Crear"/>
+    <a class="btn btn-primary" href="{% url 'tasklist:task_list' %}">Cancelar</a>
+</form>
+{% endblock %}

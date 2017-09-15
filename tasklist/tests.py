@@ -4,6 +4,8 @@ from django.core.urlresolvers import reverse
 from .models import Task
 from .views import TaskListView, TaskCreateView, TaskDeleteView, TaskUpdateView
 from random import shuffle
+from django.contrib import messages
+from django.contrib.messages.views import SuccessMessageMixin
 
 # Create your tests here.
 
